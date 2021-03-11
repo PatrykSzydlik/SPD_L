@@ -1,5 +1,7 @@
 #include "RandomNumberGenerator.hpp"
 #include <iostream>
+#include <algorithm>
+#include <cmath>
 
 #define MIN 1
 #define MAX 29
@@ -14,64 +16,93 @@ struct instance_J{
     int stop_time;
 };
 
-void generate_instance(instance_J* tasks, int size,  RandomNumberGenerator RNG){
-    int sum=0;
-    for(int i=0; i<size; i++){
-        tasks[i].number=i+1;
-        tasks[i].exec_time=RNG.nextInt(MIN, MAX);
-        sum+=tasks[i].exec_time;
+class task_series{
+    private:
+    instance_J* tasks = nullptr;
+    int size = 0;
+
+    public:
+    task_series(int size){
+        this->tasks = new instance_J[size];
+        this->size = size;
     };
 
-    for(int i=0; i<size; i++){
-        tasks[i].prep_time=RNG.nextInt(MIN, sum);
+    ~task_series(){
+        delete(this->tasks);
     };
-};
 
-void display_instance(instance_J* tasks, int size){
-    cout<<"\n Nr. |  ";
-    for(int i=0;i<size;i++){
-        cout<<tasks[i].number<<"  ";
-    };
-    cout<<"\n R_j. |  ";
-    for(int i=0;i<size;i++){
-        cout<<tasks[i].prep_time<<"  ";
-    };
-    cout<<"\n P_j. |  ";
-    for(int i=0;i<size;i++){
-        cout<<tasks[i].exec_time<<"  ";
-    };
-};
-
-void display_instance_time(instance_J* tasks, int size){
-    cout<<"\n Nr. |  ";
-    for(int i=0;i<size;i++){
-        cout<<tasks[i].number<<"  ";
-    };
-    cout<<"\n S_j. |  ";
-    for(int i=0;i<size;i++){
-        cout<<tasks[i].start_time<<"  ";
-    };
-    cout<<"\n C_j. |  ";
-    for(int i=0;i<size;i++){
-        cout<<tasks[i].stop_time<<"  ";
-    };
-};
-
-void calculate_time(instance_J* tasks, int size){
-   int current_time=0;
-   tasks[0].start_time=tasks[0].prep_time;
-   tasks[0].stop_time=tasks[0].start_time + tasks[0].exec_time;
-   for(int i=1;i<size;i++){
-        if(tasks[i-1].stop_time < tasks[i].prep_time){
-           tasks[i].start_time=tasks[i].prep_time;
-        }else{
-           tasks[i].start_time=tasks[i-1].stop_time;
+    void generate_instance(int RNG_seed){
+       
+        RandomNumberGenerator RNG(RNG_seed);
+        int sum=0;
+        for(int i=0; i<this->size; i++){
+            this->tasks[i].number=i+1;
+            this->tasks[i].exec_time=RNG.nextInt(MIN, MAX);
+            sum+=this->tasks[i].exec_time;
         };
-        tasks[i].stop_time=tasks[i].start_time + tasks[i].exec_time;
-   };
+
+        for(int i=0; i<size; i++){
+            this->tasks[i].prep_time=RNG.nextInt(MIN, sum);
+        };
+    };
+
+    void display_instance(){
+        cout<<"\n Nr. |  ";
+        for(int i=0;i<this->size;i++){
+            cout<<this->tasks[i].number<<"  ";
+        };
+        cout<<"\n R_j. |  ";
+        for(int i=0;i<this->size;i++){
+            cout<<this->tasks[i].prep_time<<"  ";
+        };
+        cout<<"\n P_j. |  ";
+        for(int i=0;i<this->size;i++){
+            cout<<this->tasks[i].exec_time<<"  ";
+        };
+    };
+
+    void display_instance_time(){
+        cout<<"\n Nr. |  ";
+        for(int i=0;i<this->size;i++){
+            cout<<this->tasks[i].number<<"  ";
+        };
+        cout<<"\n S_j. |  ";
+        for(int i=0;i<this->size;i++){
+            cout<<this->tasks[i].start_time<<"  ";
+        };
+        cout<<"\n C_j. |  ";
+        for(int i=0;i<this->size;i++){
+            cout<<this->tasks[i].stop_time<<"  ";
+        };
+    };
+
+    void calculate_time(){
+        int current_time=0;
+        this->tasks[0].start_time=this->tasks[0].prep_time;
+        this->tasks[0].stop_time=this->tasks[0].start_time + this->tasks[0].exec_time;
+        for(int i=1;i<this->size;i++){
+                if(this->tasks[i-1].stop_time < this->tasks[i].prep_time){
+                this->tasks[i].start_time=this->tasks[i].prep_time;
+                }else{
+                this->tasks[i].start_time=this->tasks[i-1].stop_time;
+                };
+                this->tasks[i].stop_time=this->tasks[i].start_time + this->tasks[i].exec_time;
+        };
+    };
+
+    void sort_by_prep_time(){
+        instance_J temp;
+        instance_J sorted[this->size];
+        sort(this->tasks, this->tasks+this->size, [](instance_J a, instance_J b) {return (a.prep_time<b.prep_time);});
+    };
+
+    void sort_with_Schrage(){
+        int current_time=0;
+        instance_J G_tasks[this->size];
+        instance_J N_tasks[this->size];
+
+    };
 };
-
-
 
 int main(){
     int seed=0;
@@ -86,13 +117,14 @@ int main(){
     }while(!seed);
     //cout<<"Seed "<<seed<<" Size "<<size<<endl;
     
-    RandomNumberGenerator RNG(seed); 
-    instance_J tasks[size];
+    task_series task_queue(size);
+    task_queue.generate_instance(seed);
+    task_queue.display_instance();
+    task_queue.calculate_time();
+    task_queue.display_instance_time();
+    task_queue.sort_by_prep_time();
+    task_queue.calculate_time();
+    task_queue.display_instance_time();
 
-   
-    generate_instance(tasks, size, RNG);
-    display_instance(tasks, size);
-    calculate_time(tasks, size);
-    display_instance_time(tasks, size);
     return 0;
 }
