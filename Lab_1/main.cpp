@@ -64,7 +64,7 @@ class task_series{
     };
 
     void display_instance(){
-        cout<<"\n Podgląd kolejki zadań \n";
+        cout<<"\n######    Podgląd kolejki zadań    ######\n";
         cout<<"\n Nr. |  ";
         for(int i=0;i<this->size;i++){
             cout<<this->tasks[i].number<<"  ";
@@ -81,10 +81,42 @@ class task_series{
         for(int i=0;i<this->size;i++){
             cout<<this->tasks[i].fin_time<<"  ";
         };
+        cout<<endl;
+
+        this->calculate_time();
+        this->display_instance_time();
     };
 
-    void display_instance_time(){
-        cout<<"\n Podgląd czasu wykonywania zadań \n";
+   
+
+    void sort_by_prep_time(){
+        instance_J temp;
+        instance_J sorted[this->size];
+        sort(this->tasks, this->tasks+this->size, [](instance_J a, instance_J b) {return (a.prep_time<b.prep_time);});
+        cout<<"\n Sortowanie po czasie przygotowanie \n";
+        this->calculate_time();
+        this->display_instance_time();
+    };
+
+    void sort_with_Schrage_array_based(){
+        int k = 1;
+        instance_J G_tasks[this->size];
+        instance_J N_tasks[this->size];
+        for(int i=1;i<this->size;i++){N_tasks[i]=this->tasks[i];};
+        int current_time=min_element(N_tasks, N_tasks+this->size, [](instance_J a, instance_J b) {return (a.prep_time<b.prep_time);})->prep_time;
+        cout<<"Minimum znalezione to: "<<current_time<<endl;
+        cout<<"\n Sortowanie algorytmem Schrage \n";
+        this->calculate_time();
+        this->display_instance_time();
+    };
+
+    void sort_with_Schrage_priority_queue_based(){
+
+    };
+
+    private:
+     void display_instance_time(){
+        cout<<"\n######    Podgląd czasu wykonywania zadań    ######\n";
         cout<<"\n Nr. |  ";
         for(int i=0;i<this->size;i++){
             cout<<this->tasks[i].number<<"  ";
@@ -101,7 +133,9 @@ class task_series{
         for(int i=0;i<this->size;i++){
             cout<<this->tasks[i].delivery_term<<"  ";
         };
+        cout<<endl;
         cout<<"\n C_max = "<<this->C_max<<"  \n";
+        cout<<endl;
     };
 
     void calculate_time(){
@@ -125,24 +159,6 @@ class task_series{
         cout<<"\n Pomiar czasu wykonania w obecnej kolejności \n";
         this->C_max=final_target;
     };
-
-    void sort_by_prep_time(){
-        instance_J temp;
-        instance_J sorted[this->size];
-        sort(this->tasks, this->tasks+this->size, [](instance_J a, instance_J b) {return (a.prep_time<b.prep_time);});
-        cout<<"\n Sortowanie po czasie przygotowanie \n";
-    };
-
-    void sort_with_Schrage(){
-        int k = 1;
-        instance_J G_tasks[this->size];
-        instance_J N_tasks[this->size];
-        for(int i=1;i<this->size;i++){N_tasks[i]=this->tasks[i];};
-        int current_time=min_element(N_tasks, N_tasks+this->size, [](instance_J a, instance_J b) {return (a.prep_time<b.prep_time);})->prep_time;
-        cout<<"minimum znalezione to: "<<current_time<<endl;
-        cout<<"\n Sortowanie algorytmem Schrage \n";
-
-    };
 };
 
 int main(){
@@ -156,17 +172,12 @@ int main(){
         cout<<"Podaj seed dla generatora liczb losowych:\n";
         cin>>seed;
     }while(!seed);
-    //cout<<"Seed "<<seed<<" Size "<<size<<endl;
-
     task_series task_queue(size);
     task_queue.generate_instance(seed);
     task_queue.display_instance();
-    task_queue.calculate_time();
-    task_queue.display_instance_time();
     task_queue.sort_by_prep_time();
-    task_queue.calculate_time();
-    task_queue.display_instance_time();
-    task_queue.sort_with_Schrage();
+    task_queue.sort_with_Schrage_array_based();
+    
 
     return 0;
 }
