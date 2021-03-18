@@ -1,4 +1,5 @@
 #include "RandomNumberGenerator.hpp"
+#include "priority_queue.hpp"
 #include <iostream>
 #include <algorithm>
 #include <cmath>
