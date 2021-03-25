@@ -58,20 +58,20 @@ bool check_if_empty(instance_J* array, int array_size){
 void display_elements(instance_J* array, int array_size){
     cout<<"\n######    Podgląd kolejki zadań    ######\n";
         cout<<"\n Nr. |  ";
-        for(int i=0;i<array_size;i++){
-            cout<<array[i].number<<"  ";
+         for(int i=0;i<array_size;i++){
+            printf("%6d,", array[i].number);
         };
-        cout<<"\n r |  ";
+        cout<<"\n   r |  ";
         for(int i=0;i<array_size;i++){
-            cout<<array[i].prep_time<<"  ";
+            printf("%6d,", array[i].prep_time);
         };
-        cout<<"\n p |  ";
+        cout<<"\n   p |  ";
         for(int i=0;i<array_size;i++){
-            cout<<array[i].exec_time<<"  ";
+            printf("%6d,", array[i].exec_time);
         };
-        cout<<"\n q |  ";
+        cout<<"\n   q |  ";
         for(int i=0;i<array_size;i++){
-            cout<<array[i].fin_time<<"  ";
+            printf("%6d,", array[i].fin_time);
         };
         cout<<endl;
 };
@@ -102,10 +102,7 @@ instance_J * get_elem_min_prep_time(instance_J * task_array, int array_size){
 
 void insert_into_array_and_clear_original(instance_J * task_array, int array_size, instance_J* elem_to_insert){
     for(int i=0;i<array_size;i++){
-        if(task_array[i].number==elem_to_insert->number){
-            // Elem is already inside the array and should be removed from origin
-            break;
-        }else if(task_array[i].number == 0){
+        if(task_array[i].number == 0){
             // There's an empty space in the array
             task_array[i] = *elem_to_insert;
             break;
@@ -180,6 +177,12 @@ class task_series{
         this->display_instance_time();
     };
 
+    void copy_tasks(instance_J * new_array, int array_size){
+        for(int i=0;i<array_size;i++){
+            new_array[i]=this->tasks[i];
+        };
+    };
+
     void sort_with_Schrage_array_based(){
         int k = 0;
         instance_J G_tasks[this->size];
@@ -188,47 +191,17 @@ class task_series{
 
         for(int i=0;i<this->size;i++){
             N_tasks[i]=this->tasks[i];
- //           cout<<"Skopiowano task : "<<N_tasks[i].number<<"\n";
         };
 
         int current_time = get_elem_min_prep_time(N_tasks, this->size)->prep_time;
- //       cout<<"Minimum znalezione to: "<<current_time<<endl;
 
 
         cout<<"\n Sortowanie algorytmem Schrage \n";
-        while(check_if_empty(G_tasks,this->size) == false || check_if_empty(N_tasks,this->size) == false ){
-/* DEBUG
-            cout<<"\n Zmienna K wynosi "<<k<<" \n";
-            cout<<"\nTablica G tasks \n";
-            display_elements(G_tasks, this->size);
-            cout<<"\nCzy tablica G jest pusta? :  ";
-            if(check_if_empty(G_tasks,this->size)==true){cout<<"true";}else{cout<<"false";};
-            cout<<"\n";
-            cout<<"\nTablica N tasks \n";
-            display_elements(N_tasks, this->size);
-            cout<<"\nCzy tablica N jest pusta? :  ";
-            if(check_if_empty(N_tasks,this->size)==true){cout<<"true";}else{cout<<"false";};
-            cout<<"\n";
- */           
+        while(check_if_empty(G_tasks,this->size) == false || check_if_empty(N_tasks,this->size) == false ){   
             while(check_if_empty(N_tasks,this->size) == false  && get_elem_min_prep_time(N_tasks, this->size)->prep_time <= current_time){
-//              cout<< "Inserting into G_tasks \n";
                 insert_into_array_and_clear_original(G_tasks, this->size, get_elem_min_prep_time(N_tasks, this->size));
-/* DEBUG
-                cout<<"\nTablica G tasks \n";
-                display_elements(G_tasks, this->size);
-                cout<<"\nCzy tablica G jest pusta? :  ";
-                if(check_if_empty(G_tasks,this->size)==true){cout<<"true";}else{cout<<"false";};
-                cout<<"\n";
-                cout<<"\nTablica N tasks \n";
-                display_elements(N_tasks, this->size);
-                cout<<"\nCzy tablica N jest pusta? :  ";
-                if(check_if_empty(N_tasks,this->size)==true){cout<<"true";}else{cout<<"false";};
-                cout<<"\n";
-*/
-
             };
             if(not check_if_empty(G_tasks,this->size)){
-//              cout<< "Inserting into PI_tasks \n";
                 insert_into_array_and_clear_original(PI_tasks, this->size, get_elem_max_fin_time(G_tasks, this->size));
                 current_time += PI_tasks[k].exec_time;
                 k++;
@@ -239,7 +212,64 @@ class task_series{
         for(int i=0;i<this->size;i++){
             this->tasks[i] = PI_tasks[i];
         };
-        this->calculate_time();
+        this-> display_instance();
+    };
+
+
+    void sort_with_Schrage_array_based_pmtn(){
+        int k = 0;
+        instance_J G_tasks[this->size];
+        instance_J N_tasks[this->size];
+        int PI_task_size = 2*this->size+1;
+        instance_J PI_tasks[PI_task_size];
+        instance_J temp;
+
+        for(int i=0;i<this->size;i++){
+            N_tasks[i]=this->tasks[i];
+        };
+        int current_time = get_elem_min_prep_time(N_tasks, this->size)->prep_time;
+        int next_time=0;
+
+
+        cout<<"\n Sortowanie algorytmem Schrage z przerwaniami\n";
+        while(check_if_empty(G_tasks,this->size) == false || check_if_empty(N_tasks,this->size) == false ){   
+            while(check_if_empty(N_tasks,this->size) == false  && get_elem_min_prep_time(N_tasks, this->size)->prep_time <= current_time){  // 4
+                temp =  *get_elem_min_prep_time(N_tasks, this->size);                                                                       // 5
+                insert_into_array_and_clear_original(G_tasks, this->size, get_elem_min_prep_time(N_tasks, this->size));                     // 6
+                if(k>0){ 
+                    if(temp.fin_time >  PI_tasks[k-1].fin_time){                                                                            // 7
+                        next_time = temp.prep_time;
+                        temp = PI_tasks[k-1];
+                        temp.exec_time = current_time - next_time;
+                        if(temp.exec_time > 0){
+                            PI_tasks[k-1].exec_time -= (current_time-next_time);
+                            PI_tasks[k-1].fin_time = 0;
+                            insert_into_array_and_clear_original(G_tasks, this->size, &temp);
+                        };
+                        current_time = next_time;                                                                                            // 9
+
+                    };
+                };
+            };                                                                                                                              // 14
+            // Gdy są zadania gotowe do wykonania
+            if(not check_if_empty(G_tasks,this->size)){
+                temp =  *get_elem_max_fin_time(G_tasks, this->size);
+                insert_into_array_and_clear_original(PI_tasks, PI_task_size, get_elem_max_fin_time(G_tasks, this->size));
+                current_time += PI_tasks[k].exec_time;
+                k++;
+            }else{
+                current_time = get_elem_min_prep_time(N_tasks, this->size)->prep_time;
+            };
+        };
+
+
+        delete this->tasks;
+        this->size=k;
+        this->tasks = new instance_J[this->size];
+
+        for(int i=0;i<this->size;i++){
+            this->tasks[i] = PI_tasks[i];
+        };
         this-> display_instance();
     };
 
@@ -311,6 +341,7 @@ int main(){
     task_queue.display_instance();
     task_queue.sort_by_prep_time();
     task_queue.sort_with_Schrage_array_based();
+    task_queue.sort_with_Schrage_array_based_pmtn();
 
     return 0;
 }
