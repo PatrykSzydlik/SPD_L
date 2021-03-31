@@ -2,7 +2,7 @@
 #include <iostream>
 #include <algorithm>
 #include <cmath>
-#include <vector>
+#include "tasks_vector.hpp"
 
 #define MIN 1
 #define MAX_EXEC 29
@@ -336,6 +336,8 @@ int main(){
         cout<<"Podaj seed dla generatora liczb losowych:\n";
         cin>>seed;
     }while(!seed);
+
+    // Part of code working on arrays
     task_series task_queue(size);
     task_queue.generate_instance(seed);
     task_queue.display_instance();
@@ -343,5 +345,20 @@ int main(){
     task_queue.sort_with_Schrage_array_based();
     task_queue.sort_with_Schrage_array_based_pmtn();
 
+    // Part of code working on priority queue based on vectors
+    tasks_vector _tasks(seed, size);
+    _tasks.display_beginning();
+    _tasks.display_permutation();
+    cout <<"\n Uruchomiono algorytm schrage" << endl;
+    _tasks.calculate_permutation(_tasks.schrage());
+    _tasks.display_permutation();
+
+    cout <<"\n Uruchomiono algorytm schrage_queue" << endl;
+    _tasks.calculate_permutation(_tasks.schrage_queue());
+    _tasks.display_permutation();
+
+    cout <<"\n Uruchomiono algorytm schrage_pmtn" << endl;
+    _tasks.schrage_pmtn();
+    _tasks.display_schrage_pmtn();
     return 0;
 }
