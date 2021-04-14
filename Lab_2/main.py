@@ -40,29 +40,25 @@ def johnson_algorithm(tasks):
     k = tasks.size - 1
     m = tasks.machines
     N = tasks.task_queue
-    min_p = tasks.task_queue[0]['p1']
-    i_min = 1
-    j_min = 0
     pi = [None]*tasks.size
 
     while N:
+        min_p=N[0]['p1']
+        i_min = 1
+        j_min = 0
         for j in range(0, len(N)):
             for i in range(1, m+1):
-                if tasks.task_queue[j][f'p{i}'] < min_p:
-                    min_p = tasks.task_queue[j][f'p{i}']
+                if N[j][f'p{i}'] < min_p:
+                    min_p = N[j][f'p{i}']
                     i_min = i
                     j_min = j
-        if tasks.task_queue[j_min][f'p{1}'] < tasks.task_queue[j_min][f'p{2}']:
-            print('dupa1')
-            print(f'iterator L = {l}')
-            pi[l] = j
+        if N[j_min][f'p{1}'] < N[j_min][f'p{2}']:
+            pi[l] = N[j_min]['j']
             l = l + 1
         else:
-            print('dupa2')
-            pi[k] = j
+            pi[k] = N[j_min]['j']
             k = k - 1
         N.pop(j_min)
-        print(N)
     return pi        
 
 
