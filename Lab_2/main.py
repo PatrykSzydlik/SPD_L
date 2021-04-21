@@ -1,4 +1,5 @@
 from RandomNumberGenerator import RandomNumberGenerator
+from itertools import permutations
 
 MAX_VALUE=29
 
@@ -15,7 +16,9 @@ class Tasks(object):
         for J in range(0, self.size):
             task_queue.append({'j':J+1})
             for M in range(1, self.machines+1):
-                task_queue[J].update({f'p{M}': RNG.nextInt(1, MAX_VALUE)})   
+                task_queue[J].update({f'p{M}': RNG.nextInt(1, MAX_VALUE)})
+                task_queue[J].update({f'S{M}':0})  
+                task_queue[J].update({f'C{M}':0})  
         return task_queue
 
     def display_instance(self):
@@ -31,6 +34,30 @@ class Tasks(object):
             print(line)
         print('\n')
 
+    def calculate_Cmax(self, permutation):
+        for m in range(1, self.machines+1):
+            if m == 1:
+                self.task_queue[permutation[0]]["S1"] = 0
+                self.task_queue[permutation[0]]["C1"] = self.task_queue[0]['p1']
+            else :
+                self.task_queue[permutation[0]][f"S{m}"] = self.task_queue[permutation[0]][f"C{m-1}"]
+            
+            for number in permutation[1:]:
+                number=number-1
+                print(f"{number}")
+                if m != 1:
+                    self.task_queue[number][f'S{(m)}'] = max( self.task_queue[number-1][f'C{(m)}'], self.task_queue[number][f'C{(m-1)}'])
+                else:
+                    self.task_queue[number][f'S{(m)}'] = self.task_queue[number-1][f'C{(m)}']
+                self.task_queue[number][f'C{(m)}'] = self.task_queue[number][f'S{(m)}'] + self.task_queue[number][f'p{(m)}']
+
+            print(self.task_queue)
+        print(permutation[-1])
+        Cmax = self.task_queue[permutation[-1]-1][f'C{self.machines}']
+        return Cmax
+        
+        
+
 
 
 
@@ -39,7 +66,7 @@ def johnson_algorithm(tasks):
     l = 0
     k = tasks.size - 1
     m = tasks.machines
-    N = tasks.task_queue
+    N = tasks.task_queue.copy()
     pi = [None]*tasks.size
 
     while N:
@@ -59,7 +86,19 @@ def johnson_algorithm(tasks):
             pi[k] = N[j_min]['j']
             k = k - 1
         N.pop(j_min)
-    return pi        
+    return pi  
+
+def brute_force_alghorithm(tasks):
+    tasks_numbers=[number for number in range(0,tasks.size)]
+    permutation_generator = permutations(tasks_numbers)
+    Cmin=float("inf")
+    best_permutation=[]
+    for random_sequence in permutation_generator:
+        new_Cmax=tasks.calculate_Cmax(random_sequence)
+        if new_Cmax < Cmin:
+            Cmin=new_Cmax
+            best_permutation=random_sequence
+          
 
 
 if __name__ == '__main__':
@@ -72,3 +111,5 @@ if __name__ == '__main__':
     result = johnson_algorithm(tasks)
     print('Posegregowane!')
     print(result)
+    cmax=tasks.calculate_Cmax(result)
+    print(cmax)
