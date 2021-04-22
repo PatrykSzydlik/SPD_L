@@ -1,5 +1,6 @@
 from RandomNumberGenerator import RandomNumberGenerator
 from itertools import permutations
+import copy
 
 MAX_VALUE=29
 
@@ -8,7 +9,7 @@ class Tasks(object):
         self.size=size
         self.machines=machines
         self.task_queue=self.__generate_instance(seed)
-
+        self.lastPermutation_queue = []
 
     def __generate_instance(self, seed):
         RNG = RandomNumberGenerator(seed)
@@ -34,33 +35,54 @@ class Tasks(object):
             print(line)
         print('\n')
 
-    def calculate_Cmax(self, permutation):
-        for m in range(1, self.machines+1):
-            if m == 1:
-                self.task_queue[permutation[0]]["S1"] = 0
-                self.task_queue[permutation[0]]["C1"] = self.task_queue[0]['p1']
-            else :
-                self.task_queue[permutation[0]][f"S{m}"] = self.task_queue[permutation[0]][f"C{m-1}"]
-            
-            for number in permutation[1:]:
-                number=number-1
-                print(f"{number}")
-                if m != 1:
-                    self.task_queue[number][f'S{(m)}'] = max( self.task_queue[number-1][f'C{(m)}'], self.task_queue[number][f'C{(m-1)}'])
+    def display_lastPermutation(self):
+        print('Displaying last calculated instance: \n')
+        for i in range(self.machines+1):
+            line=' j  :  ' if i==0 else f' C{i} :  '
+            for task in self.lastPermutation_queue:
+                if i == 0:
+                    elem=task['j']
                 else:
-                    self.task_queue[number][f'S{(m)}'] = self.task_queue[number-1][f'C{(m)}']
-                self.task_queue[number][f'C{(m)}'] = self.task_queue[number][f'S{(m)}'] + self.task_queue[number][f'p{(m)}']
+                    elem=task[f'C{i}']
+                line+=str(elem).rjust(5)
+            print(line)
+        print('\n')
 
-            print(self.task_queue)
-        print(permutation[-1])
-        Cmax = self.task_queue[permutation[-1]-1][f'C{self.machines}']
+    def calculate_Cmax(self, permutation):
+        self.lastPermutation_queue.clear()
+        for i in range(self.size):
+            dic = copy.deepcopy(self.task_queue[permutation[i]-1])
+            self.lastPermutation_queue.append(dic)
+        for m in range(1, self.machines+1): # okreslenie czasu rozpoczecia pierwszego taska na wszystkich maszynach
+            if m == 1:
+                self.lastPermutation_queue[0]["S1"] = 0
+                self.lastPermutation_queue[0]["C1"] = self.lastPermutation_queue[0]['p1']
+            else :
+                self.lastPermutation_queue[0][f"S{m}"] = self.lastPermutation_queue[0][f"C{m-1}"]
+                self.lastPermutation_queue[0][f'C{(m)}'] = self.lastPermutation_queue[0][f'S{(m)}'] + self.lastPermutation_queue[0][f'p{(m)}']
+
+            for j in range(1, self.size): # okreslenie czasu rozpoczecia reszty taskow
+                if m != 1:
+                    self.lastPermutation_queue[j][f'S{(m)}'] = max( self.lastPermutation_queue[j-1][f'C{(m)}'], self.lastPermutation_queue[j][f'C{(m-1)}'])
+                else:
+                    self.lastPermutation_queue[j][f'S{(m)}'] = self.lastPermutation_queue[j-1][f'C{(m)}']
+                self.lastPermutation_queue[j][f'C{(m)}'] = self.lastPermutation_queue[j][f'S{(m)}'] + self.lastPermutation_queue[j][f'p{(m)}']
+        Cmax = self.lastPermutation_queue[-1][f'C{self.machines}']
         return Cmax
-        
-        
 
-
-
-
+    def brute_force(self):
+        _perms = []
+        _perms = copy.deepcopy(list(permutations(range(1, (self.size+1)))))
+        _best_perm = []  
+        _cmin = 0
+        for i in _perms:
+            _c = self.calculate_Cmax(list(i))
+            if _cmin == 0:
+                _cmin = _c
+            if _c < _cmin:
+                _cmin = _c
+                _best_perm = list(i)
+        return _best_perm
 
 def johnson_algorithm(tasks):
     l = 0
@@ -98,8 +120,7 @@ def brute_force_alghorithm(tasks):
         if new_Cmax < Cmin:
             Cmin=new_Cmax
             best_permutation=random_sequence
-          
-
+    return best_permutation
 
 if __name__ == '__main__':
     size = int(input('Podaj ilosc elementów: '))
@@ -108,8 +129,27 @@ if __name__ == '__main__':
     print(f'Size {size} machine {machine} seed {seed}')
     tasks=Tasks(size, machine, seed)
     tasks.display_instance()
+    
+    print('Natural : ')
+    result = [i+1 for i in range (tasks.size)]
+    cmax = tasks.calculate_Cmax(result)
+    tasks.display_lastPermutation()
+    print(f"Cmax : {cmax}")
+
+    print('Johnson : ')
     result = johnson_algorithm(tasks)
-    print('Posegregowane!')
-    print(result)
     cmax=tasks.calculate_Cmax(result)
-    print(cmax)
+    tasks.display_lastPermutation()
+    print(f"Cmax : {cmax}")
+
+    print('Brute force Kuba')
+    result =  tasks.brute_force()
+    cmax = tasks.calculate_Cmax(result)
+    tasks.display_lastPermutation()
+    print(f"Cmax : {cmax}")
+
+    print('Brute force Patryk')
+    result =  brute_force_alghorithm(tasks)
+    cmax = tasks.calculate_Cmax(result)
+    tasks.display_lastPermutation()
+    print(f"Cmax : {cmax}")
