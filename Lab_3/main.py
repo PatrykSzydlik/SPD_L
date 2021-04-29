@@ -20,11 +20,6 @@ class task():
         self.T = self.C - self.d
         if self.T < 0:
             self.T = 0
-
-        print(f'Task N ={self.n}')
-        print(f'Start time ={self.S}')
-        print(f'End time ={self.C}')
-        print(f'Delay time ={self.T}')
     
     def wiTi(self):
         return self.w*self.T
@@ -54,17 +49,14 @@ class tasks_queue():
             self.queue.append(task(J+1, p_list[J], w_list[J], d_list[J]))
             self.last_permutation.append(J+1)
 
-    def set_permutation(new_permutation):
-        self.last_permutation = new_permutation.copy()
+    def set_permutation(self, new_permutation):
+        self.last_permutation = list(new_permutation)
 
     def calculate_wiTi(self):
         previous_task_number = self.last_permutation[0]
         self.queue[previous_task_number-1].update_time(0)
-        print(f'Previos number {previous_task_number}')
-        wiTi = self.queue[previous_task_number].wiTi()
+        wiTi = self.queue[previous_task_number-1].wiTi()
         for task_number in self.last_permutation[1:]:
-            print(f'Current number {task_number}')
-            print(f'Last finished {self.queue[previous_task_number-1].C}')
             self.queue[task_number-1].update_time(self.queue[previous_task_number-1].C)
             wiTi+=self.queue[task_number-1].wiTi()
             previous_task_number=task_number
@@ -105,6 +97,19 @@ class tasks_queue():
         print(T_display)
         print('\n\n')
 
+def brute_force_alghorithm(tasks):
+    tasks_numbers=[number for number in range(1,tasks.size+1)]
+    permutation_generator = permutations(tasks_numbers)
+    wiTimin=float("inf")
+    best_permutation=[]
+    for current_sequence in permutation_generator:
+        tasks.set_permutation(current_sequence)
+        new_wiTi=tasks.calculate_wiTi()
+        if new_wiTi < wiTimin:
+            wiTimin=new_wiTi
+            best_permutation=current_sequence
+    return best_permutation
+
 if __name__ == '__main__':
     size = int(input('Podaj ilosc elementów: '))
     seed = int(input('Podaj ziarno RNG: '))
@@ -114,5 +119,13 @@ if __name__ == '__main__':
     wiTi=tasks.calculate_wiTi()
     tasks.display_last_permutation()
     print(f"wiTi = {wiTi}")
+    
+    
+    bruteforce_result = brute_force_alghorithm(tasks)
+    tasks.set_permutation(bruteforce_result)
+    wiTi=tasks.calculate_wiTi()
+    tasks.display_last_permutation()
+    print(f"wiTi = {wiTi}")
+
 
 
