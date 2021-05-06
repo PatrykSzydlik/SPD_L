@@ -1,5 +1,7 @@
 from RandomNumberGenerator import RandomNumberGenerator
 from itertools import permutations
+import copy
+
 
 MAX_VALUE=29
 MAX_D = 29
@@ -110,6 +112,36 @@ def brute_force_alghorithm(tasks):
             best_permutation=current_sequence
     return best_permutation
 
+def greedy_algorithm(tasks):   
+    tasks_copy = copy.deepcopy(tasks)
+    greedy_tasks = sorted(tasks_copy.queue, key=lambda x: x.d , reverse=True)
+    greedy_permutation = []
+    for i in greedy_tasks:
+        greedy_permutation.append(i.n)
+    return greedy_permutation
+
+def PD1(tasks):
+    D = copy.deepcopy(tasks)
+    sum = 0
+    memory = [2**tasks.size - 1]
+    for i in memory:
+        memory = -1
+    min = 0
+
+    for j in D.queue:
+        sum += j.p
+    for j in range(D.size):
+
+        D_copy = copy.deepcopy(tasks)
+        D_copy.queue.pop(j)
+        D_copy.last_permutation.pop(j)
+        D_copy.size -=1
+
+        currentMin = max(sum- D.queue[j].d, 0)*D.queue[j].w + D_copy.calculate_wiTi()
+        if min == 0 or currentMin < min:
+            min = currentMin
+    return min
+
 if __name__ == '__main__':
     size = int(input('Podaj ilosc elementów: '))
     seed = int(input('Podaj ziarno RNG: '))
@@ -120,12 +152,19 @@ if __name__ == '__main__':
     tasks.display_last_permutation()
     print(f"wiTi = {wiTi}")
     
-    
-    bruteforce_result = brute_force_alghorithm(tasks)
-    tasks.set_permutation(bruteforce_result)
-    wiTi=tasks.calculate_wiTi()
-    tasks.display_last_permutation()
-    print(f"wiTi = {wiTi}")
+    # print("Brute")
+    # #bruteforce_result = brute_force_alghorithm(tasks)
+    # tasks.set_permutation(bruteforce_result)
+    # wiTi=tasks.calculate_wiTi()
+    # tasks.display_last_permutation()
+    # print(f"wiTi = {wiTi}")
 
+    # print("Greedy")
+    # greedy_result = greedy_algorithm(tasks)
+    # tasks.set_permutation(greedy_result)
+    # wiTi=tasks.calculate_wiTi()
+    # tasks.display_last_permutation()
+    # print(f"wiTi = {wiTi}")
 
-
+    print("PD")
+    print(PD1(tasks))
