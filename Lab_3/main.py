@@ -6,6 +6,8 @@ import copy
 MAX_VALUE=29
 MAX_D = 29
 
+memory = []
+
 class task():
     def __init__(self, number, p_time, w_weight, d_time):
         self.n=number
@@ -114,33 +116,77 @@ def brute_force_alghorithm(tasks):
 
 def greedy_algorithm(tasks):   
     tasks_copy = copy.deepcopy(tasks)
-    greedy_tasks = sorted(tasks_copy.queue, key=lambda x: x.d , reverse=True)
+    greedy_tasks = sorted(tasks_copy.queue, key=lambda x: x.d , reverse=False)
     greedy_permutation = []
     for i in greedy_tasks:
         greedy_permutation.append(i.n)
     return greedy_permutation
 
-def PD1(tasks):
-    D = copy.deepcopy(tasks)
+
+def PD1(D):
     sum = 0
-    memory = [2**tasks.size - 1]
-    for i in memory:
-        memory = -1
-    min = 0
-
-    for j in D.queue:
+    min = -1
+    for j in D.queue: #sum
         sum += j.p
-    for j in range(D.size):
-
-        D_copy = copy.deepcopy(tasks)
-        D_copy.queue.pop(j)
-        D_copy.last_permutation.pop(j)
-        D_copy.size -=1
-
-        currentMin = max(sum- D.queue[j].d, 0)*D.queue[j].w + D_copy.calculate_wiTi()
-        if min == 0 or currentMin < min:
+    for j in range(len(D.last_permutation)): # min
+        D_copy = copy.deepcopy(D)
+        new_perm = D_copy.last_permutation
+        new_perm.pop(j)
+        D_copy.set_permutation(new_perm)
+        currentMin = max(sum- D.queue[j].d, 0)*D.queue[j].w + F1(D_copy)
+        if min == -1 or currentMin < min:
             min = currentMin
     return min
+
+
+def F1(D):
+    global memory
+    memory_ind=0
+    for i in D.last_permutation:
+        memory_ind |= 1<<(i-1)
+    if memory[memory_ind] == -1:
+        memory[memory_ind] = PD1(D)
+    return memory[memory_ind]
+
+local_memory = [0]
+
+def PD_sum(tasks, D):
+    new_sum = 0
+    for i in range(0, tasks.size):
+        if ((D >> i) & 1) == 1:
+            new_sum += tasks.queue[i].p
+    return new_sum  
+
+def PD_minimum(tasks, D, sum):
+    global local_memory
+    task_list = []
+    for i in range(0, tasks.size):
+        if ((D >> i) & 1) == 1:
+            task_list.append(i)
+    if D == 0:
+        return 0
+    min_wiTi = 999999
+    wiTi=0
+    for j in task_list:
+        wiTi = (sum-tasks.queue[j].d) * tasks.queue[j].w 
+        if wiTi < 0:
+            wiTi = 0
+        #print(f"wiTi   {wiTi}")
+        #print(local_memory)
+        #print(f"COS   {cos}")
+        wiTi += local_memory[D&(~(1<<j))]
+        if wiTi < min_wiTi:
+            min_wiTi = wiTi
+    return min_wiTi
+
+def PD_Patryk(tasks):
+    global local_memory
+    local_memory = [-1]*2**tasks.size
+    #print(f"FRESH  {local_memory}")
+    for D in range(0, 2**tasks.size):
+        sum = PD_sum(tasks, D)
+        local_memory[D] = PD_minimum(tasks, D, sum)
+    return local_memory[2**tasks.size - 1]
 
 if __name__ == '__main__':
     size = int(input('Podaj ilosc elementów: '))
@@ -151,20 +197,27 @@ if __name__ == '__main__':
     wiTi=tasks.calculate_wiTi()
     tasks.display_last_permutation()
     print(f"wiTi = {wiTi}")
+
+    print("Brute")
+    bruteforce_result = brute_force_alghorithm(tasks)
+    tasks.set_permutation(bruteforce_result)
+    wiTi=tasks.calculate_wiTi()
+    tasks.display_last_permutation()
+    print(f"wiTi = {wiTi}")
+
+    print("Greedy")
+    greedy_result = greedy_algorithm(tasks)
+    tasks.set_permutation(greedy_result)
+    wiTi=tasks.calculate_wiTi()
+    tasks.display_last_permutation()
+    print(f"wiTi = {wiTi}")
     
-    # print("Brute")
-    # #bruteforce_result = brute_force_alghorithm(tasks)
-    # tasks.set_permutation(bruteforce_result)
-    # wiTi=tasks.calculate_wiTi()
-    # tasks.display_last_permutation()
-    # print(f"wiTi = {wiTi}")
-
-    # print("Greedy")
-    # greedy_result = greedy_algorithm(tasks)
-    # tasks.set_permutation(greedy_result)
-    # wiTi=tasks.calculate_wiTi()
-    # tasks.display_last_permutation()
-    # print(f"wiTi = {wiTi}")
-
-    print("PD")
+    
+    print("PD_Patryk")
+    print(PD_Patryk(tasks))
+    
+    print("PD1")
+    memory = [-1]*(2**tasks.size - 1)
+    natural_permutation = [number for number in range(1, tasks.size+1)]
+    tasks.set_permutation(natural_permutation)
     print(PD1(tasks))
