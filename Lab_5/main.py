@@ -323,44 +323,43 @@ def NEH_algorithm_mod_2(tasks):
     return best_pi_part
 
 def simulatedAnnealing(tasks):
-    RNG = RandomNumberGenerator(5)
+    RNG = RandomNumberGenerator(121)
     t = copy.deepcopy(tasks)
-    T = 300.0
-    Tend = 20.0
+    T = 800.0
+    Tend = 0.0
     it = 0
     L = 5
-    e = 2.718281
     pi = []
     pi_new = []
     pi_best = []
     
-
-    for i in range(1, t.size+1): #natural perm
-        pi.append(i)
-        pi_best.append(i)
+    #natural perm
+    for perm in range(1, t.size+1): 
+        pi.append(perm)
+        pi_best.append(perm)
 
     while T > Tend:
         for k in range(L):
-            i = RNG.nextInt(0, t.size-1)
-            j = RNG.nextInt(0, t.size-1)
+            i = RNG.nextInt(0, t.size) -1
+            j = RNG.nextInt(0, t.size) -1
             pi_new = pi
             swap_value = pi_new[i]
             pi_new[i] = pi_new[j]
             pi_new[j] = swap_value
             
-            cmax_new = t.calculate_Cmax(pi)
-            cmax_old = t.calculate_Cmax(pi_new)
+            cmax_new = t.calculate_Cmax(pi_new)
+            cmax_old = t.calculate_Cmax(pi)
             if cmax_new > cmax_old:
                 r = RNG.nextFloat(0,1)
-                dCmax = cmax_new-cmax_old
+                dCmax = cmax_old-cmax_new
                 if r >= math.exp(dCmax/T):
-                    pi = pi_new
-            pi_new = pi
+                    pi_new = pi
+            pi = pi_new
             if t.calculate_Cmax(pi_best) > t.calculate_Cmax(pi):
                 pi_best = pi
         it +=1
-        T = T - 2
-        #T = T / math.log(e, (it+1))
+        #T = T - 2
+        T = T / math.log(it+1) #prawdopodobnie w pythonie tak wyglada ln(it+1)
     return pi_best
         
 
