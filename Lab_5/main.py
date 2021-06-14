@@ -323,10 +323,10 @@ def NEH_algorithm_mod_2(tasks):
     return best_pi_part
 
 def simulatedAnnealing(tasks):
-    RNG = RandomNumberGenerator(121)
+    RNG = RandomNumberGenerator(123)
     t = copy.deepcopy(tasks)
-    T = 800.0
-    Tend = 0.0
+    T = 1550.0 #temperatura zarzenia na bialo rozgrzanej stali :)
+    Tend = 20.0 # cokolwiek większe od zera
     it = 0
     L = 5
     pi = []
@@ -340,13 +340,12 @@ def simulatedAnnealing(tasks):
 
     while T > Tend:
         for k in range(L):
-            i = RNG.nextInt(0, t.size) -1
-            j = RNG.nextInt(0, t.size) -1
+            i = RNG.nextInt(0, t.size)-1
+            j = RNG.nextInt(0, t.size)-1
             pi_new = pi
             swap_value = pi_new[i]
             pi_new[i] = pi_new[j]
             pi_new[j] = swap_value
-            
             cmax_new = t.calculate_Cmax(pi_new)
             cmax_old = t.calculate_Cmax(pi)
             if cmax_new > cmax_old:
@@ -359,10 +358,52 @@ def simulatedAnnealing(tasks):
                 pi_best = pi
         it +=1
         #T = T - 2
-        T = T / math.log(it+1) #prawdopodobnie w pythonie tak wyglada ln(it+1)
+        T = T / math.log(it+1) #ln(it+1)
     return pi_best
-        
 
+
+def tabuSearch(tasks):
+    t = copy.deepcopy(tasks)
+    itLimit = 1000
+    cadanceBan = 5
+    cmaxBest = math.inf
+    pi = []
+    pi_new = []
+    pi_best = []
+    tabu = [[0]*t.size]*t.size
+    J = 0
+    K = 0
+
+    #natural perm
+    for perm in range(1, t.size+1): 
+        pi.append(perm)
+        pi_best.append(perm)
+
+    for it in range (itLimit):
+        for j in range(t.size):
+            for k in range(j+1, t.size):
+                if(tabu[j][k] < it):
+                    pi_new = pi
+                    swap_value = pi_new[j]
+                    pi_new[j] = pi_new[k]
+                    pi_new[k] = swap_value
+                    cmax_new = t.calculate_Cmax(pi_new)
+                    if cmax_new < cmaxBest:
+                        cmaxBest = cmax_new
+                        J = j
+                        K = k
+        swap_value = pi[J]
+        pi[J] = pi[K]
+        pi[K] = swap_value
+        tabu[J][K] = it + cadanceBan
+        tabu[K][J] = tabu[J][K] 
+        if t.calculate_Cmax(pi) < t.calculate_Cmax(pi_best):
+            pi_best = pi
+    return pi_best
+
+
+
+        
 if __name__ == '__main__':
     
     size = int(input('Podaj ilosc elementów: '))
@@ -372,39 +413,38 @@ if __name__ == '__main__':
     tasks=Tasks(size, machine, seed)
     tasks.display_instance()
 
-    print('Johnson : ')
+    print('Johnson')
     result = johnson_algorithm(tasks)
     cmax=tasks.calculate_Cmax(result)
-    tasks.display_lastPermutation()
+    print(result)
     print(f"Cmax : {cmax}")
 
     print('NEH alghorithm')
     result = NEH_algorithm(tasks)
     cmax = tasks.calculate_Cmax(result)
     print(result)
-    tasks.display_lastPermutation
     print(f"Cmax : {cmax}")
 
     print('NEH alghorithm mod 1')
     result = NEH_algorithm_mod_1(tasks)
     cmax = tasks.calculate_Cmax(result)
     print(result)
-    tasks.display_lastPermutation
     print(f"Cmax : {cmax}")
 
     print('NEH alghorithm mod 4')
     result = NEH_algorithm_mod_4(tasks)
     cmax = tasks.calculate_Cmax(result)
     print(result)
-    tasks.display_lastPermutation
     print(f"Cmax : {cmax}")
    
     print('Simulated Annealing')
     result = simulatedAnnealing(tasks)
     cmax = tasks.calculate_Cmax(result)
     print(result)
-    tasks.display_lastPermutation
     print(f"Cmax : {cmax}")
     
-    
-
+    print('Tabu search')
+    result = tabuSearch(tasks)
+    cmax = tasks.calculate_Cmax(result)
+    print(result)
+    print(f"Cmax : {cmax}")
