@@ -342,7 +342,7 @@ def simulatedAnnealing(tasks):
         for k in range(L):
             i = RNG.nextInt(0, t.size)-1
             j = RNG.nextInt(0, t.size)-1
-            pi_new = pi
+            pi_new = copy.deepcopy(pi)
             swap_value = pi_new[i]
             pi_new[i] = pi_new[j]
             pi_new[j] = swap_value
@@ -352,10 +352,10 @@ def simulatedAnnealing(tasks):
                 r = RNG.nextFloat(0,1)
                 dCmax = cmax_old-cmax_new
                 if r >= math.exp(dCmax/T):
-                    pi_new = pi
-            pi = pi_new
+                    pi_new = copy.deepcopy(pi)
+            pi = copy.deepcopy(pi_new)
             if t.calculate_Cmax(pi_best) > t.calculate_Cmax(pi):
-                pi_best = pi
+                pi_best = copy.deepcopy(pi)
         it +=1
         #T = T - 2
         T = T / math.log(it+1) #ln(it+1)
@@ -383,7 +383,7 @@ def tabuSearch(tasks):
         for j in range(t.size):
             for k in range(j+1, t.size):
                 if(tabu[j][k] < it):
-                    pi_new = pi
+                    pi_new = copy.deepcopy(pi)
                     swap_value = pi_new[j]
                     pi_new[j] = pi_new[k]
                     pi_new[k] = swap_value
@@ -398,7 +398,7 @@ def tabuSearch(tasks):
         tabu[J][K] = it + cadanceBan
         tabu[K][J] = tabu[J][K] 
         if t.calculate_Cmax(pi) < t.calculate_Cmax(pi_best):
-            pi_best = pi
+            pi_best = copy.deepcopy(pi)
     return pi_best
 
 
