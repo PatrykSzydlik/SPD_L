@@ -326,9 +326,9 @@ def simulatedAnnealing(tasks):
     RNG = RandomNumberGenerator(123)
     t = copy.deepcopy(tasks)
     T = 1550.0 #temperatura zarzenia na bialo rozgrzanej stali :)
-    Tend = 20.0 # cokolwiek większe od zera
+    Tend = 1E-10 # cokolwiek większe od zera
     it = 0
-    L = 5
+    L = 10
     pi = []
     pi_new = []
     pi_best = []
@@ -357,16 +357,15 @@ def simulatedAnnealing(tasks):
             if t.calculate_Cmax(pi_best) > t.calculate_Cmax(pi):
                 pi_best = copy.deepcopy(pi)
         it +=1
-        #T = T - 2
         T = T / math.log(it+1) #ln(it+1)
     return pi_best
 
 
 def tabuSearch(tasks):
     t = copy.deepcopy(tasks)
-    itLimit = 1000
-    cadanceBan = 5
-    cmaxBest = math.inf
+    itLimit = 100
+    cadanceBan = 10
+ 
     pi = []
     pi_new = []
     pi_best = []
@@ -378,8 +377,8 @@ def tabuSearch(tasks):
     for perm in range(1, t.size+1): 
         pi.append(perm)
         pi_best.append(perm)
-
     for it in range (itLimit):
+        cmaxBest = math.inf
         for j in range(t.size):
             for k in range(j+1, t.size):
                 if(tabu[j][k] < it):
